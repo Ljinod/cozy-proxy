@@ -10,12 +10,13 @@ events    = require 'events'
 sharing      = rewire  "#{helpers.prefix}server/controllers/sharing"
 remoteAccess = require "#{helpers.prefix}server/lib/remote_access"
 
+# Proxy
 client = helpers.getClient()
-client.setBasicAuth "home", "token"
 
+# Connect to the Data-System with the credentials of the Proxy
 Client = require('request-json').JsonClient
 clientDS = new Client urlHelper.dataSystem.url()
-clientDS.setBasicAuth "home", "token"
+clientDS.setBasicAuth "proxy", "token"
 
 
 describe 'sharing unit tests', ->
@@ -42,18 +43,10 @@ describe 'sharing unit tests', ->
             createSharing sharing_request, (err, docInfo) =>
                 should.not.exist err
                 @docInfo = docInfo
-                should.exist @docInfo._id
                 done()
 
         it 'then a new document is inserted in the database', (done) ->
-            clientDS.get "data/#{@docInfo._id}", (err, res) ->
-                doc = JSON.parse(res.body)
-                doc.desc.should.equal         sharing_request.desc
-                doc.rules.should.deep.equal   sharing_request.rules
-                doc.sharerUrl.should.equal    sharing_request.sharerUrl
-                doc.recipientUrl.should.equal sharing_request.recipientUrl
-                doc.preToken.should.equal     sharing_request.preToken
-                doc.shareID.should.equal      sharing_request.shareID
+            should.exist @docInfo._id
             done()
 
 
